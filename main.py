@@ -1,161 +1,161 @@
 import flet as ft
 
 def main(page: ft.Page):
-    # 1. 안전 제일 설정
-    page.title = "FlatPanel Button"
+    # 1. 기본 설정
+    page.title = "Text Controls"
     page.bgcolor = "black"
-    page.padding = 0
-    page.spacing = 0
-    page.safe_area_top = True
-    
+    page.scroll = ft.ScrollMode.AUTO # 스크롤 켜서 잘림 방지
+    page.padding = 20
+
     # 2. 상태값
     state = {
-        "diameter": 300,  # 정수형 사용 (안전)
-        "brightness": 100, # 0~100 정수 (안전)
-        "is_flash": False
+        "size": 300,
+        "bright": 100,
+        "mode_flash": False
     }
 
     # =================================================================
-    # 안전한 컴포넌트 (복잡한 속성 제거)
+    # UI 컴포넌트 (아이콘 절대 사용 금지)
     # =================================================================
-    
-    # 중앙 원
+
+    # [상태 텍스트]
+    txt_info = ft.Text(
+        value="크기: 300px | 밝기: 100%", 
+        color="white", 
+        size=20
+    )
+
+    # [중앙 원]
     the_circle = ft.Container(
         width=300,
         height=300,
         bgcolor=ft.colors.WHITE,
-        border_radius=150,
+        border_radius=150, # 원 모양
         alignment=ft.alignment.center,
-        opacity=1.0 # 1.0 = 100%
-    )
-    
-    # 상태 표시 텍스트
-    txt_info = ft.Text(
-        value="D: 300px | B: 100%", 
-        color="white", 
-        size=20, 
-        weight="bold"
     )
 
     # =================================================================
-    # 로직 (단순 클릭 이벤트)
+    # 로직
     # =================================================================
     def update_view():
-        # 원 속성 적용
-        the_circle.width = state["diameter"]
-        the_circle.height = state["diameter"]
-        the_circle.border_radius = state["diameter"] / 2
-        the_circle.opacity = state["brightness"] / 100.0
+        # 1. 원 업데이트
+        the_circle.width = state["size"]
+        the_circle.height = state["size"]
+        the_circle.border_radius = state["size"] / 2
+        the_circle.opacity = state["bright"] / 100.0
         
-        # 텍스트 업데이트
-        txt_info.value = f"D: {state['diameter']}px | B: {state['brightness']}%"
+        # 2. 텍스트 업데이트
+        txt_info.value = f"크기: {state['size']}px | 밝기: {state['bright']}%"
         
-        # 화면 갱신
+        # 3. 화면 반영
         the_circle.update()
         txt_info.update()
 
-    def change_size(delta):
-        # 크기 조절 (최소 50 ~ 최대 1200)
-        new_size = state["diameter"] + delta
-        if 50 <= new_size <= 1200:
-            state["diameter"] = new_size
+    # 버튼 이벤트들
+    def size_up(e):
+        if state["size"] < 1000:
+            state["size"] += 50
             update_view()
 
-    def change_bright(delta):
-        # 밝기 조절 (최소 10 ~ 최대 100)
-        new_bright = state["brightness"] + delta
-        if 10 <= new_bright <= 100:
-            state["brightness"] = new_bright
+    def size_down(e):
+        if state["size"] > 50:
+            state["size"] -= 50
             update_view()
 
-    def toggle_mode(e):
-        state["is_flash"] = not state["is_flash"]
-        if state["is_flash"]:
+    def bright_up(e):
+        if state["bright"] < 100:
+            state["bright"] += 10
+            update_view()
+
+    def bright_down(e):
+        if state["bright"] > 10:
+            state["bright"] -= 10
+            update_view()
+
+    def toggle_flash(e):
+        state["mode_flash"] = not state["mode_flash"]
+        if state["mode_flash"]:
             page.bgcolor = "white"
-            controls_stack.visible = False
-            the_circle.visible = False # 원도 숨김 (완전 흰색)
+            controls.visible = False # 컨트롤 숨김
+            the_circle.visible = False # 원 숨김 (완전 흰색)
         else:
             page.bgcolor = "black"
-            controls_stack.visible = True
+            controls.visible = True
             the_circle.visible = True
         page.update()
 
     # =================================================================
-    # 버튼 생성기 (반복 코드 줄이기)
+    # 컨트롤 패널 (순수 텍스트 버튼 사용)
     # =================================================================
-    def create_btn(icon, func, data):
-        return ft.IconButton(
-            icon=icon, 
-            icon_color="white", 
-            icon_size=30,
-            on_click=lambda e: func(data),
-            style=ft.ButtonStyle(
-                bgcolor=ft.colors.with_opacity(0.2, "grey"), 
-                shape=ft.CircleBorder(),
-                padding=15
-            )
+    
+    # [스타일] 잘 보이는 큰 버튼
+    def make_btn(text, func, color="blue"):
+        return ft.ElevatedButton(
+            text=text, 
+            on_click=func,
+            bgcolor=color,
+            color="white",
+            height=50,
+            width=80
         )
 
-    # 버튼들
-    btn_size_up = create_btn(ft.icons.ADD, change_size, 50)     # 50px씩 증가
-    btn_size_down = create_btn(ft.icons.REMOVE, change_size, -50) # 50px씩 감소
-    
-    btn_bright_up = create_btn(ft.icons.BRIGHTNESS_7, change_bright, 10)   # 10% 증가
-    btn_bright_down = create_btn(ft.icons.BRIGHTNESS_5, change_bright, -10) # 10% 감소
-
-    btn_mode = ft.IconButton(
-        icon=ft.icons.FLASHLIGHT_ON, 
-        icon_color="yellow", 
-        icon_size=30,
-        on_click=toggle_mode
-    )
-
-    # =================================================================
-    # 레이아웃: Stack을 이용한 절대 위치 배치
-    # (Row/Column 계산 오류 방지)
-    # =================================================================
-    
-    # 컨트롤 패널 덩어리
-    controls_stack = ft.Stack(
+    # 컨트롤 영역
+    controls = ft.Column(
         controls=[
-            # 상단 정보 텍스트
-            ft.Container(content=txt_info, top=0, left=0, right=0, alignment=ft.alignment.center),
+            ft.Divider(color="grey"),
+            txt_info,
+            ft.Divider(color="transparent", height=10),
             
-            # 크기 조절 버튼 (왼쪽)
-            ft.Container(content=btn_size_down, bottom=0, left=20),
-            ft.Container(content=btn_size_up, bottom=0, left=100),
-            ft.Container(content=ft.Text("Size", color="grey"), bottom=60, left=50),
-
-            # 밝기 조절 버튼 (오른쪽)
-            ft.Container(content=btn_bright_down, bottom=0, right=100),
-            ft.Container(content=btn_bright_up, bottom=0, right=20),
-            ft.Container(content=ft.Text("Bright", color="grey"), bottom=60, right=45),
+            ft.Text("크기 조절", color="grey"),
+            ft.Row(
+                [make_btn("- 작게", size_down), make_btn("+ 크게", size_up)], 
+                alignment=ft.MainAxisAlignment.CENTER
+            ),
+            
+            ft.Divider(color="transparent", height=10),
+            
+            ft.Text("밝기 조절", color="grey"),
+            ft.Row(
+                [make_btn("- 어둡게", bright_down), make_btn("+ 밝게", bright_up)], 
+                alignment=ft.MainAxisAlignment.CENTER
+            ),
+            
+            ft.Divider(color="transparent", height=20),
+            
+            # 플래시 버튼 (노란색)
+            ft.ElevatedButton(
+                text="플래시 모드 (흰색)", 
+                on_click=toggle_flash,
+                bgcolor="amber",
+                color="black",
+                height=60,
+                width=200
+            )
         ],
-        width=400, # 패널 너비 제한
-        height=150,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER
     )
 
-    # 최종 화면 구성
-    # Stack으로 쌓아서 위치 고정
+    # =================================================================
+    # 최종 레이아웃 (Column 사용 - 가장 안전함)
+    # =================================================================
     page.add(
-        ft.Stack(
+        ft.Column(
             controls=[
-                # 1. 중앙 원
-                ft.Container(content=the_circle, alignment=ft.alignment.center),
+                # 상단 여백
+                ft.Container(height=20),
                 
-                # 2. 모드 버튼 (좌측 상단 고정)
-                ft.Container(content=btn_mode, top=20, left=20),
-                
-                # 3. 컨트롤러 (하단 중앙 고정)
+                # 원이 들어갈 공간 (높이 고정하여 UI 밀림 방지)
                 ft.Container(
-                    content=controls_stack, 
-                    bottom=20, 
-                    left=0, 
-                    right=0, 
-                    alignment=ft.alignment.bottom_center
-                )
+                    content=the_circle,
+                    alignment=ft.alignment.center,
+                    height=500, # 넉넉하게 공간 확보
+                ),
+                
+                # 하단 컨트롤 패널
+                controls
             ],
-            expand=True
+            scroll=ft.ScrollMode.AUTO, # 화면 넘치면 스크롤 가능
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
     )
 
