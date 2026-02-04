@@ -1,7 +1,7 @@
 import flet as ft
 
 # =============================================================================
-# Google Pixel Style Slider Class (Modern Glassmorphism Version)
+# Google Pixel Style Slider Class (Crash-Free String Icons)
 # =============================================================================
 class PixelSlider(ft.Container):
     def __init__(
@@ -11,7 +11,8 @@ class PixelSlider(ft.Container):
         max_v: float, 
         on_change, 
         vertical: bool = False, 
-        icon: str = ft.icons.LENS,
+        # [수정 1] ft.icons.XXX 대신 문자열 "circle" 사용 (오류 원천 차단)
+        icon: str = "circle", 
         label_format: str = "{:.0f}"
     ):
         super().__init__()
@@ -24,8 +25,7 @@ class PixelSlider(ft.Container):
         
         self.track_length = 100.0 
         
-        # [디자인 수정 1] Glassmorphism (오버랩 대응)
-        # 빛이 슬라이더 뒤로 올 때 흐리게 보이도록 블러 처리 + 그림자 추가
+        # Glassmorphism
         self.blur = ft.Blur(15, 15, ft.BlurTileMode.CLAMP)
         self.shadow = ft.BoxShadow(
             spread_radius=0,
@@ -34,28 +34,27 @@ class PixelSlider(ft.Container):
             offset=ft.Offset(0, 4)
         )
         
-        # [디자인 수정 2] 배경 스타일 (더 얇아진 두께에 맞춰 R값 조정)
+        # 디자인
         self.bgcolor = ft.colors.with_opacity(0.1, ft.colors.GREY_900)
-        self.border_radius = 16 # 두께가 얇아졌으므로 둥글기(R)도 약간 줄임
+        self.border_radius = 16
         self.clip_behavior = ft.ClipBehavior.HARD_EDGE
         self.padding = 0
         
-        # 채움 바 (투명도 유지)
+        # 채움 바
         self.fill_bar = ft.Container(
             bgcolor=ft.colors.with_opacity(0.25, ft.colors.WHITE),
             border_radius=16,
             animate=ft.animation.Animation(100, ft.AnimationCurve.EASE_OUT),
         )
         
-        # 텍스트/아이콘 (가독성 확보를 위해 약간 더 진하게)
         text_color = ft.colors.with_opacity(0.5, ft.colors.WHITE)
         
-        self.icon_view = ft.Icon(icon, color=text_color, size=18) # 아이콘 크기 약간 축소
+        self.icon_view = ft.Icon(icon, color=text_color, size=18)
         self.label_view = ft.Text(
             value=self.label_format.format(value), 
             color=text_color, 
             weight=ft.FontWeight.W_600,
-            size=13 # 폰트 크기 약간 축소
+            size=13
         )
 
         self.content_stack = ft.Stack()
@@ -160,7 +159,6 @@ class PixelSlider(ft.Container):
 # Main App
 # =============================================================================
 def main(page: ft.Page):
-    # [변경] 앱 제목 변경
     page.title = "FlatPanel"
     page.theme_mode = ft.ThemeMode.DARK
     page.padding = 0
@@ -226,13 +224,15 @@ def main(page: ft.Page):
         if state["is_light_mode"]:
             flash_overlay.opacity = 1
             slider_panel.opacity = 0
-            e.control.icon = ft.icons.FLASHLIGHT_OFF
+            # [수정 2] "flashlight_off" 문자열 사용
+            e.control.icon = "flashlight_off" 
             e.control.icon_color = ft.colors.BLACK54
             e.control.bgcolor = ft.colors.with_opacity(0.1, ft.colors.BLACK)
         else:
             flash_overlay.opacity = 0
             slider_panel.opacity = 1
-            e.control.icon = ft.icons.FLASHLIGHT_ON
+            # [수정 3] "flashlight_on" 문자열 사용
+            e.control.icon = "flashlight_on"
             e.control.icon_color = ft.colors.with_opacity(0.5, ft.colors.WHITE)
             e.control.bgcolor = ft.colors.with_opacity(0.1, ft.colors.WHITE)
         
@@ -241,7 +241,8 @@ def main(page: ft.Page):
         e.control.update()
 
     mode_btn = ft.IconButton(
-        icon=ft.icons.FLASHLIGHT_ON,
+        # [수정 4] "flashlight_on" 문자열 사용
+        icon="flashlight_on",
         icon_color=ft.colors.with_opacity(0.5, ft.colors.WHITE),
         bgcolor=ft.colors.with_opacity(0.1, ft.colors.WHITE),
         icon_size=24,
@@ -258,13 +259,13 @@ def main(page: ft.Page):
 
         if is_portrait:
             # [세로 모드]
-            # [변경] 슬라이더 두께를 얇게 조정 (70 -> 48)
             bar_height = 48
             track_len = w - 40
             
             s_bright = PixelSlider(
                 state["brightness"], 0.1, 1.0, on_brightness_change,
-                vertical=False, icon=ft.icons.BRIGHTNESS_6, label_format="{:.0%}"
+                # [수정 5] "brightness_6" 문자열 사용
+                vertical=False, icon="brightness_6", label_format="{:.0%}"
             )
             s_bright.height = bar_height
             s_bright.expand = True 
@@ -272,14 +273,14 @@ def main(page: ft.Page):
             
             s_size = PixelSlider(
                 state["diameter"], 50, limit_size, on_size_change,
-                vertical=False, icon=ft.icons.ASPECT_RATIO, label_format="{:.0f} px"
+                # [수정 6] "aspect_ratio" 문자열 사용
+                vertical=False, icon="aspect_ratio", label_format="{:.0f} px"
             )
             s_size.height = bar_height
             s_size.expand = True 
             s_size.set_track_length(track_len)
 
             slider_panel.width = w
-            # 패널 전체 높이도 슬라이더가 얇아진 만큼 조정
             slider_panel.height = 150 
             slider_panel.left = 0
             slider_panel.right = 0
@@ -288,25 +289,25 @@ def main(page: ft.Page):
             
             slider_panel.content = ft.Column(
                 controls=[s_bright, s_size],
-                spacing=12, # 간격 약간 조정
+                spacing=12,
                 alignment=ft.MainAxisAlignment.CENTER
             )
             slider_panel.padding = ft.padding.only(left=20, right=20, bottom=30, top=10)
             
             mode_btn.top = None
-            mode_btn.bottom = 160 # 버튼 위치 조정
+            mode_btn.bottom = 160 
             mode_btn.right = 20
             mode_btn.left = None
 
         else:
             # [가로 모드]
-            # [변경] 슬라이더 두께를 얇게 조정 (90 -> 60)
             bar_width = 60
             track_len = h - 40
             
             s_bright = PixelSlider(
                 state["brightness"], 0.1, 1.0, on_brightness_change,
-                vertical=True, icon=ft.icons.BRIGHTNESS_6, label_format="{:.0%}"
+                # [수정 7] "brightness_6" 문자열 사용
+                vertical=True, icon="brightness_6", label_format="{:.0%}"
             )
             s_bright.width = bar_width
             s_bright.expand = True
@@ -314,13 +315,13 @@ def main(page: ft.Page):
             
             s_size = PixelSlider(
                 state["diameter"], 50, limit_size, on_size_change,
-                vertical=True, icon=ft.icons.ASPECT_RATIO, label_format="{:.0f} px"
+                # [수정 8] "aspect_ratio" 문자열 사용
+                vertical=True, icon="aspect_ratio", label_format="{:.0f} px"
             )
             s_size.width = bar_width
             s_size.expand = True
             s_size.set_track_length(track_len)
 
-            # 패널 너비 조정
             slider_panel.width = 160 
             slider_panel.height = h
             slider_panel.right = 0
@@ -359,5 +360,4 @@ def main(page: ft.Page):
     on_resize(None)
 
 if __name__ == "__main__":
-
     ft.app(target=main)
