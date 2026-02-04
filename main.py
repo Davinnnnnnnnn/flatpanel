@@ -1,7 +1,7 @@
 import flet as ft
 
 # =============================================================================
-# Google Pixel Style Slider Class (Crash-Free String Icons)
+# Google Pixel Style Slider Class (Final Stable Version)
 # =============================================================================
 class PixelSlider(ft.Container):
     def __init__(
@@ -11,7 +11,6 @@ class PixelSlider(ft.Container):
         max_v: float, 
         on_change, 
         vertical: bool = False, 
-        # [수정 1] ft.icons.XXX 대신 문자열 "circle" 사용 (오류 원천 차단)
         icon: str = "circle", 
         label_format: str = "{:.0f}"
     ):
@@ -23,16 +22,11 @@ class PixelSlider(ft.Container):
         self.vertical = vertical
         self.label_format = label_format
         
-        self.track_length = 100.0 
+        # 기본 길이 설정 (안전장치)
+        self.track_length = 150.0 
         
-        # Glassmorphism
-        self.blur = ft.Blur(15, 15, ft.BlurTileMode.CLAMP)
-        self.shadow = ft.BoxShadow(
-            spread_radius=0,
-            blur_radius=15,
-            color=ft.colors.with_opacity(0.2, ft.colors.BLACK),
-            offset=ft.Offset(0, 4)
-        )
+        # Glassmorphism Effect
+        self.blur = ft.Blur(10, 10, ft.BlurTileMode.CLAMP)
         
         # 디자인
         self.bgcolor = ft.colors.with_opacity(0.1, ft.colors.GREY_900)
@@ -114,6 +108,7 @@ class PixelSlider(ft.Container):
 
     def _on_pan(self, e: ft.DragUpdateEvent):
         limit = self.track_length
+        if limit <= 0: limit = 1 # 0 나누기 방지
         
         if self.vertical:
             y = max(0, min(limit, e.local_y))
@@ -150,6 +145,7 @@ class PixelSlider(ft.Container):
         if val is not None:
             self.value = val
         self._apply_visuals_internal()
+        # 페이지에 붙어있지 않아도 에러 안 나게 방어
         if self.fill_bar.page:
             self.fill_bar.update()
             self.label_view.update()
@@ -164,6 +160,9 @@ def main(page: ft.Page):
     page.padding = 0
     page.margin = 0
     page.bgcolor = "#000000"
+    
+    # [중요] 안드로이드 상태바/네비게이션바 영역까지 침범하도록 설정 (전체화면)
+    page.window.frameless = True 
     
     state = {
         "is_light_mode": False,
@@ -224,14 +223,12 @@ def main(page: ft.Page):
         if state["is_light_mode"]:
             flash_overlay.opacity = 1
             slider_panel.opacity = 0
-            # [수정 2] "flashlight_off" 문자열 사용
             e.control.icon = "flashlight_off" 
             e.control.icon_color = ft.colors.BLACK54
             e.control.bgcolor = ft.colors.with_opacity(0.1, ft.colors.BLACK)
         else:
             flash_overlay.opacity = 0
             slider_panel.opacity = 1
-            # [수정 3] "flashlight_on" 문자열 사용
             e.control.icon = "flashlight_on"
             e.control.icon_color = ft.colors.with_opacity(0.5, ft.colors.WHITE)
             e.control.bgcolor = ft.colors.with_opacity(0.1, ft.colors.WHITE)
@@ -241,7 +238,6 @@ def main(page: ft.Page):
         e.control.update()
 
     mode_btn = ft.IconButton(
-        # [수정 4] "flashlight_on" 문자열 사용
         icon="flashlight_on",
         icon_color=ft.colors.with_opacity(0.5, ft.colors.WHITE),
         bgcolor=ft.colors.with_opacity(0.1, ft.colors.WHITE),
@@ -250,9 +246,11 @@ def main(page: ft.Page):
         style=ft.ButtonStyle(shape=ft.CircleBorder(), padding=15)
     )
 
+    # [핵심 수정] 화면 크기 감지 및 UI 배치 로직
     def on_resize(e):
-        w = page.window_width if page.window_width else 400
-        h = page.window_height if page.window_height else 800
+        # [안전장치 1] page.width가 0이거나 None이면 기본값(모바일 평균) 사용
+        w = page.width if page.width and page.width > 0 else 360
+        h = page.height if page.height and page.height > 0 else 800
         
         is_portrait = w < h
         limit_size = max(w, h) * 1.5
@@ -261,10 +259,10 @@ def main(page: ft.Page):
             # [세로 모드]
             bar_height = 48
             track_len = w - 40
-            
+            if track_len < 10: track_len = 100 # 너무 작아지는 것 방지
+
             s_bright = PixelSlider(
                 state["brightness"], 0.1, 1.0, on_brightness_change,
-                # [수정 5] "brightness_6" 문자열 사용
                 vertical=False, icon="brightness_6", label_format="{:.0%}"
             )
             s_bright.height = bar_height
@@ -273,7 +271,6 @@ def main(page: ft.Page):
             
             s_size = PixelSlider(
                 state["diameter"], 50, limit_size, on_size_change,
-                # [수정 6] "aspect_ratio" 문자열 사용
                 vertical=False, icon="aspect_ratio", label_format="{:.0f} px"
             )
             s_size.height = bar_height
@@ -303,10 +300,10 @@ def main(page: ft.Page):
             # [가로 모드]
             bar_width = 60
             track_len = h - 40
-            
+            if track_len < 10: track_len = 100
+
             s_bright = PixelSlider(
                 state["brightness"], 0.1, 1.0, on_brightness_change,
-                # [수정 7] "brightness_6" 문자열 사용
                 vertical=True, icon="brightness_6", label_format="{:.0%}"
             )
             s_bright.width = bar_width
@@ -315,7 +312,6 @@ def main(page: ft.Page):
             
             s_size = PixelSlider(
                 state["diameter"], 50, limit_size, on_size_change,
-                # [수정 8] "aspect_ratio" 문자열 사용
                 vertical=True, icon="aspect_ratio", label_format="{:.0f} px"
             )
             s_size.width = bar_width
@@ -341,11 +337,16 @@ def main(page: ft.Page):
             mode_btn.bottom = None
             mode_btn.right = None
 
+        # 화면에 붙은 뒤 업데이트
         slider_panel.update()
-        page.update()
+        
+        # 버튼 업데이트 (중요: 레이아웃이 바뀐 뒤 위치 잡기 위해)
+        if mode_btn.page: mode_btn.update()
+
 
     page.on_resized = on_resize
 
+    # [중요] 레이아웃 구성
     layout = ft.Stack(
         controls=[
             ft.Container(content=the_circle, alignment=ft.alignment.center),
@@ -353,10 +354,13 @@ def main(page: ft.Page):
             slider_panel,
             mode_btn
         ],
-        expand=True
+        expand=True # 스택이 화면을 꽉 채우도록 강제
     )
 
+    # 1. 먼저 레이아웃을 페이지에 추가 (이 시점엔 빈 화면일 수 있음)
     page.add(layout)
+    
+    # 2. 강제로 초기 리사이즈 호출 (기본값으로 UI 그리기)
     on_resize(None)
 
 if __name__ == "__main__":
