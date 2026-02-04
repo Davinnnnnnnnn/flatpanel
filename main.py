@@ -1,7 +1,7 @@
 import flet as ft
 
 # =============================================================================
-# Google Pixel Style Slider Class (Final Stable Version)
+# Google Pixel Style Slider Class (Tablet Optimized & Crash Free)
 # =============================================================================
 class PixelSlider(ft.Container):
     def __init__(
@@ -22,10 +22,10 @@ class PixelSlider(ft.Container):
         self.vertical = vertical
         self.label_format = label_format
         
-        # 기본 길이 설정 (안전장치)
-        self.track_length = 150.0 
+        # 트랙 길이 안전장치 (0이 들어오면 기본값 200 사용)
+        self.track_length = 200.0 
         
-        # Glassmorphism Effect
+        # Glassmorphism
         self.blur = ft.Blur(10, 10, ft.BlurTileMode.CLAMP)
         
         # 디자인
@@ -63,9 +63,11 @@ class PixelSlider(ft.Container):
         self._apply_visuals_internal()
 
     def set_track_length(self, length: float):
-        if length > 0:
-            self.track_length = length
-            self.update_visuals()
+        # 길이가 너무 작거나 0이면 안전값 사용
+        if length < 10: 
+            length = 100
+        self.track_length = length
+        self.update_visuals()
 
     def _build_layout(self):
         self.content_stack.controls.clear()
@@ -108,7 +110,7 @@ class PixelSlider(ft.Container):
 
     def _on_pan(self, e: ft.DragUpdateEvent):
         limit = self.track_length
-        if limit <= 0: limit = 1 # 0 나누기 방지
+        if limit <= 0: limit = 1 
         
         if self.vertical:
             y = max(0, min(limit, e.local_y))
@@ -145,7 +147,6 @@ class PixelSlider(ft.Container):
         if val is not None:
             self.value = val
         self._apply_visuals_internal()
-        # 페이지에 붙어있지 않아도 에러 안 나게 방어
         if self.fill_bar.page:
             self.fill_bar.update()
             self.label_view.update()
@@ -155,22 +156,28 @@ class PixelSlider(ft.Container):
 # Main App
 # =============================================================================
 def main(page: ft.Page):
+    # 1. 페이지 초기 설정
     page.title = "FlatPanel"
     page.theme_mode = ft.ThemeMode.DARK
-    page.padding = 0
-    page.margin = 0
     page.bgcolor = "#000000"
     
-    # [중요] 안드로이드 상태바/네비게이션바 영역까지 침범하도록 설정 (전체화면)
-    page.window.frameless = True 
+    # [핵심 수정 1] 스크롤 끄기: 모바일에서 expand=True가 작동하려면 스크롤이 꺼져 있어야 함
+    page.scroll = ft.ScrollMode.OFF 
     
+    # [핵심 수정 2] 패딩/간격 제거 및 정렬: 콘텐츠 붕괴 방지
+    page.padding = 0
+    page.spacing = 0
+    page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+
+    # 상태 변수
     state = {
         "is_light_mode": False,
         "diameter": 300.0,
         "brightness": 1.0,
     }
 
-    # 1. 플래시 오버레이
+    # UI 컴포넌트
     flash_overlay = ft.Container(
         expand=True,
         bgcolor=ft.colors.WHITE,
@@ -179,7 +186,6 @@ def main(page: ft.Page):
         visible=True,
     )
 
-    # 2. 메인 원
     the_circle = ft.Container(
         width=state["diameter"],
         height=state["diameter"],
@@ -196,11 +202,11 @@ def main(page: ft.Page):
         alignment=ft.alignment.center
     )
 
-    # 3. 슬라이더 패널
     slider_panel = ft.Container(
         animate_opacity=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT)
     )
 
+    # 로직 핸들러
     def update_circle_props():
         the_circle.width = state["diameter"]
         the_circle.height = state["diameter"]
@@ -219,7 +225,6 @@ def main(page: ft.Page):
 
     def toggle_mode(e):
         state["is_light_mode"] = not state["is_light_mode"]
-        
         if state["is_light_mode"]:
             flash_overlay.opacity = 1
             slider_panel.opacity = 0
@@ -246,11 +251,14 @@ def main(page: ft.Page):
         style=ft.ButtonStyle(shape=ft.CircleBorder(), padding=15)
     )
 
-    # [핵심 수정] 화면 크기 감지 및 UI 배치 로직
+    # [핵심 수정 3] 화면 크기 감지 및 안전장치
     def on_resize(e):
-        # [안전장치 1] page.width가 0이거나 None이면 기본값(모바일 평균) 사용
-        w = page.width if page.width and page.width > 0 else 360
-        h = page.height if page.height and page.height > 0 else 800
+        # 갤럭시 탭 등에서 초기 width가 0일 경우를 대비해 기본값(태블릿 가로 모드 기준) 설정
+        safe_w = page.width if page.width and page.width > 0 else 1200
+        safe_h = page.height if page.height and page.height > 0 else 800
+        
+        w = safe_w
+        h = safe_h
         
         is_portrait = w < h
         limit_size = max(w, h) * 1.5
@@ -259,7 +267,7 @@ def main(page: ft.Page):
             # [세로 모드]
             bar_height = 48
             track_len = w - 40
-            if track_len < 10: track_len = 100 # 너무 작아지는 것 방지
+            if track_len < 50: track_len = 300 # 안전값
 
             s_bright = PixelSlider(
                 state["brightness"], 0.1, 1.0, on_brightness_change,
@@ -300,7 +308,7 @@ def main(page: ft.Page):
             # [가로 모드]
             bar_width = 60
             track_len = h - 40
-            if track_len < 10: track_len = 100
+            if track_len < 50: track_len = 300 # 안전값
 
             s_bright = PixelSlider(
                 state["brightness"], 0.1, 1.0, on_brightness_change,
@@ -337,16 +345,13 @@ def main(page: ft.Page):
             mode_btn.bottom = None
             mode_btn.right = None
 
-        # 화면에 붙은 뒤 업데이트
-        slider_panel.update()
-        
-        # 버튼 업데이트 (중요: 레이아웃이 바뀐 뒤 위치 잡기 위해)
+        # UI 업데이트
+        if slider_panel.page: slider_panel.update()
         if mode_btn.page: mode_btn.update()
-
 
     page.on_resized = on_resize
 
-    # [중요] 레이아웃 구성
+    # [중요] 레이아웃 구성: Stack을 사용하여 전체 화면 강제
     layout = ft.Stack(
         controls=[
             ft.Container(content=the_circle, alignment=ft.alignment.center),
@@ -354,14 +359,16 @@ def main(page: ft.Page):
             slider_panel,
             mode_btn
         ],
-        expand=True # 스택이 화면을 꽉 채우도록 강제
+        expand=True, # Stack이 부모(Page) 크기를 꽉 채우도록 함
+        alignment=ft.alignment.center
     )
 
-    # 1. 먼저 레이아웃을 페이지에 추가 (이 시점엔 빈 화면일 수 있음)
     page.add(layout)
     
-    # 2. 강제로 초기 리사이즈 호출 (기본값으로 UI 그리기)
+    # [핵심 수정 4] 초기 렌더링 강제 실행
+    # 앱이 켜지자마자 기본값으로라도 UI를 그려서 검은 화면 방지
     on_resize(None)
+    page.update()
 
 if __name__ == "__main__":
     ft.app(target=main)
