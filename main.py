@@ -11,7 +11,7 @@ class PixelSlider(ft.Container):
         max_v: float, 
         on_change, 
         vertical: bool = False, 
-        icon: str = ft.icons.CIRCLE,
+        icon: str = ft.icons.LENS,
         label_format: str = "{:.0f}"
     ):
         super().__init__()
@@ -24,8 +24,8 @@ class PixelSlider(ft.Container):
         
         self.track_length = 100.0 
         
-        # [µ¿⁄¿Œ ºˆ¡§ 1] Glassmorphism (ø¿πˆ∑¶ ¥Î¿¿)
-        # ∫˚¿Ã ΩΩ∂Û¿Ã¥ı µ⁄∑Œ ø√ ∂ß »Â∏Æ∞‘ ∫∏¿Ãµµ∑œ ∫Ì∑Ø √≥∏Æ + ±◊∏≤¿⁄ √ﬂ∞°
+        # [ÎîîÏûêÏù∏ ÏàòÏ†ï 1] Glassmorphism (Ïò§Î≤ÑÎû© ÎåÄÏùë)
+        # ÎπõÏù¥ Ïä¨ÎùºÏù¥Îçî Îí§Î°ú Ïò¨ Îïå ÌùêÎ¶¨Í≤å Î≥¥Ïù¥ÎèÑÎ°ù Î∏îÎü¨ Ï≤òÎ¶¨ + Í∑∏Î¶ºÏûê Ï∂îÍ∞Ä
         self.blur = ft.Blur(15, 15, ft.BlurTileMode.CLAMP)
         self.shadow = ft.BoxShadow(
             spread_radius=0,
@@ -34,28 +34,28 @@ class PixelSlider(ft.Container):
             offset=ft.Offset(0, 4)
         )
         
-        # [µ¿⁄¿Œ ºˆ¡§ 2] πË∞Ê Ω∫≈∏¿œ (¥ı æ„æ∆¡¯ µŒ≤≤ø° ∏¬√Á R∞™ ¡∂¡§)
+        # [ÎîîÏûêÏù∏ ÏàòÏ†ï 2] Î∞∞Í≤Ω Ïä§ÌÉÄÏùº (Îçî ÏñáÏïÑÏßÑ ÎëêÍªòÏóê ÎßûÏ∂∞ RÍ∞í Ï°∞Ï†ï)
         self.bgcolor = ft.colors.with_opacity(0.1, ft.colors.GREY_900)
-        self.border_radius = 16 # µŒ≤≤∞° æ„æ∆¡≥¿∏π«∑Œ µ’±€±‚(R)µµ æ‡∞£ ¡Ÿ¿”
+        self.border_radius = 16 # ÎëêÍªòÍ∞Ä ÏñáÏïÑÏ°åÏúºÎØÄÎ°ú Îë•Í∏ÄÍ∏∞(R)ÎèÑ ÏïΩÍ∞Ñ Ï§ÑÏûÑ
         self.clip_behavior = ft.ClipBehavior.HARD_EDGE
         self.padding = 0
         
-        # √§øÚ πŸ (≈ı∏Ìµµ ¿Ø¡ˆ)
+        # Ï±ÑÏõÄ Î∞î (Ìà¨Î™ÖÎèÑ Ïú†ÏßÄ)
         self.fill_bar = ft.Container(
             bgcolor=ft.colors.with_opacity(0.25, ft.colors.WHITE),
             border_radius=16,
             animate=ft.animation.Animation(100, ft.AnimationCurve.EASE_OUT),
         )
         
-        # ≈ÿΩ∫∆Æ/æ∆¿Ãƒ‹ (∞°µ∂º∫ »Æ∫∏∏¶ ¿ß«ÿ æ‡∞£ ¥ı ¡¯«œ∞‘)
+        # ÌÖçÏä§Ìä∏/ÏïÑÏù¥ÏΩò (Í∞ÄÎèÖÏÑ± ÌôïÎ≥¥Î•º ÏúÑÌï¥ ÏïΩÍ∞Ñ Îçî ÏßÑÌïòÍ≤å)
         text_color = ft.colors.with_opacity(0.5, ft.colors.WHITE)
         
-        self.icon_view = ft.Icon(icon, color=text_color, size=18) # æ∆¿Ãƒ‹ ≈©±‚ æ‡∞£ √‡º“
+        self.icon_view = ft.Icon(icon, color=text_color, size=18) # ÏïÑÏù¥ÏΩò ÌÅ¨Í∏∞ ÏïΩÍ∞Ñ Ï∂ïÏÜå
         self.label_view = ft.Text(
             value=self.label_format.format(value), 
             color=text_color, 
             weight=ft.FontWeight.W_600,
-            size=13 # ∆˘∆Æ ≈©±‚ æ‡∞£ √‡º“
+            size=13 # Ìè∞Ìä∏ ÌÅ¨Í∏∞ ÏïΩÍ∞Ñ Ï∂ïÏÜå
         )
 
         self.content_stack = ft.Stack()
@@ -160,7 +160,7 @@ class PixelSlider(ft.Container):
 # Main App
 # =============================================================================
 def main(page: ft.Page):
-    # [∫Ø∞Ê] æ€ ¡¶∏Ò ∫Ø∞Ê
+    # [Î≥ÄÍ≤Ω] Ïï± Ï†úÎ™© Î≥ÄÍ≤Ω
     page.title = "FlatPanel"
     page.theme_mode = ft.ThemeMode.DARK
     page.padding = 0
@@ -173,7 +173,7 @@ def main(page: ft.Page):
         "brightness": 1.0,
     }
 
-    # 1. «√∑°Ω√ ø¿πˆ∑π¿Ã
+    # 1. ÌîåÎûòÏãú Ïò§Î≤ÑÎ†àÏù¥
     flash_overlay = ft.Container(
         expand=True,
         bgcolor=ft.colors.WHITE,
@@ -182,7 +182,7 @@ def main(page: ft.Page):
         visible=True,
     )
 
-    # 2. ∏ﬁ¿Œ ø¯
+    # 2. Î©îÏù∏ Ïõê
     the_circle = ft.Container(
         width=state["diameter"],
         height=state["diameter"],
@@ -199,7 +199,7 @@ def main(page: ft.Page):
         alignment=ft.alignment.center
     )
 
-    # 3. ΩΩ∂Û¿Ã¥ı ∆–≥Œ
+    # 3. Ïä¨ÎùºÏù¥Îçî Ìå®ÎÑê
     slider_panel = ft.Container(
         animate_opacity=ft.animation.Animation(300, ft.AnimationCurve.EASE_OUT)
     )
@@ -257,8 +257,8 @@ def main(page: ft.Page):
         limit_size = max(w, h) * 1.5
 
         if is_portrait:
-            # [ºº∑Œ ∏µÂ]
-            # [∫Ø∞Ê] ΩΩ∂Û¿Ã¥ı µŒ≤≤∏¶ æ„∞‘ ¡∂¡§ (70 -> 48)
+            # [ÏÑ∏Î°ú Î™®Îìú]
+            # [Î≥ÄÍ≤Ω] Ïä¨ÎùºÏù¥Îçî ÎëêÍªòÎ•º ÏñáÍ≤å Ï°∞Ï†ï (70 -> 48)
             bar_height = 48
             track_len = w - 40
             
@@ -279,7 +279,7 @@ def main(page: ft.Page):
             s_size.set_track_length(track_len)
 
             slider_panel.width = w
-            # ∆–≥Œ ¿¸√º ≥Ù¿Ãµµ ΩΩ∂Û¿Ã¥ı∞° æ„æ∆¡¯ ∏∏≈≠ ¡∂¡§
+            # Ìå®ÎÑê Ï†ÑÏ≤¥ ÎÜíÏù¥ÎèÑ Ïä¨ÎùºÏù¥ÎçîÍ∞Ä ÏñáÏïÑÏßÑ ÎßåÌÅº Ï°∞Ï†ï
             slider_panel.height = 150 
             slider_panel.left = 0
             slider_panel.right = 0
@@ -288,19 +288,19 @@ def main(page: ft.Page):
             
             slider_panel.content = ft.Column(
                 controls=[s_bright, s_size],
-                spacing=12, # ∞£∞› æ‡∞£ ¡∂¡§
+                spacing=12, # Í∞ÑÍ≤© ÏïΩÍ∞Ñ Ï°∞Ï†ï
                 alignment=ft.MainAxisAlignment.CENTER
             )
             slider_panel.padding = ft.padding.only(left=20, right=20, bottom=30, top=10)
             
             mode_btn.top = None
-            mode_btn.bottom = 160 # πˆ∆∞ ¿ßƒ° ¡∂¡§
+            mode_btn.bottom = 160 # Î≤ÑÌäº ÏúÑÏπò Ï°∞Ï†ï
             mode_btn.right = 20
             mode_btn.left = None
 
         else:
-            # [∞°∑Œ ∏µÂ]
-            # [∫Ø∞Ê] ΩΩ∂Û¿Ã¥ı µŒ≤≤∏¶ æ„∞‘ ¡∂¡§ (90 -> 60)
+            # [Í∞ÄÎ°ú Î™®Îìú]
+            # [Î≥ÄÍ≤Ω] Ïä¨ÎùºÏù¥Îçî ÎëêÍªòÎ•º ÏñáÍ≤å Ï°∞Ï†ï (90 -> 60)
             bar_width = 60
             track_len = h - 40
             
@@ -320,7 +320,7 @@ def main(page: ft.Page):
             s_size.expand = True
             s_size.set_track_length(track_len)
 
-            # ∆–≥Œ ≥ ∫Ò ¡∂¡§
+            # Ìå®ÎÑê ÎÑàÎπÑ Ï°∞Ï†ï
             slider_panel.width = 160 
             slider_panel.height = h
             slider_panel.right = 0
@@ -359,4 +359,5 @@ def main(page: ft.Page):
     on_resize(None)
 
 if __name__ == "__main__":
+
     ft.app(target=main)
