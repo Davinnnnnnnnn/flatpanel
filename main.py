@@ -1,160 +1,163 @@
 import flet as ft
 
 def main(page: ft.Page):
-    # 1. 기본 설정
-    page.title = "Text Controls"
+    # 1. 화면 설정 (텍스트 성공했던 설정 그대로 유지)
     page.bgcolor = "black"
-    page.scroll = ft.ScrollMode.AUTO # 스크롤 켜서 잘림 방지
-    page.padding = 20
+    page.title = "Block UI"
+    page.padding = 0
+    page.spacing = 0
+    
+    # 테마 강제 설정 (충돌 방지)
+    page.theme_mode = ft.ThemeMode.DARK
 
     # 2. 상태값
     state = {
         "size": 300,
         "bright": 100,
-        "mode_flash": False
+        "flash": False
     }
 
     # =================================================================
-    # UI 컴포넌트 (아이콘 절대 사용 금지)
+    # 3. "가짜 버튼" 공장 (Container로 버튼 만들기)
+    # 위젯을 쓰지 않으므로 충돌 확률 0%
     # =================================================================
+    def create_block_btn(text, color, func):
+        return ft.Container(
+            content=ft.Text(text, color="black", weight="bold", size=16),
+            bgcolor=color,
+            width=100,
+            height=60,
+            alignment=ft.alignment.center,
+            border_radius=8,
+            on_click=func, # 클릭 이벤트는 컨테이너에 직접 연결
+            padding=5
+        )
 
-    # [상태 텍스트]
-    txt_info = ft.Text(
-        value="크기: 300px | 밝기: 100%", 
-        color="white", 
-        size=20
-    )
+    # =================================================================
+    # 4. 화면 요소
+    # =================================================================
+    
+    # 정보창 (텍스트는 성공했으니 안심하고 사용)
+    info_text = ft.Text("상태: 크기 300 / 밝기 100%", size=18, color="white")
 
-    # [중앙 원]
+    # 중앙 원 (단순 컨테이너)
     the_circle = ft.Container(
         width=300,
         height=300,
-        bgcolor=ft.colors.WHITE,
-        border_radius=150, # 원 모양
-        alignment=ft.alignment.center,
+        bgcolor="white",
+        border_radius=150,
+        alignment=ft.alignment.center
     )
 
     # =================================================================
-    # 로직
+    # 5. 로직 함수
     # =================================================================
-    def update_view():
-        # 1. 원 업데이트
+    def update_screen():
+        # 원 상태 반영
         the_circle.width = state["size"]
         the_circle.height = state["size"]
         the_circle.border_radius = state["size"] / 2
         the_circle.opacity = state["bright"] / 100.0
         
-        # 2. 텍스트 업데이트
-        txt_info.value = f"크기: {state['size']}px | 밝기: {state['bright']}%"
+        # 텍스트 반영
+        info_text.value = f"상태: 크기 {state['size']} / 밝기 {state['bright']}%"
         
-        # 3. 화면 반영
-        the_circle.update()
-        txt_info.update()
+        page.update()
 
-    # 버튼 이벤트들
-    def size_up(e):
-        if state["size"] < 1000:
-            state["size"] += 50
-            update_view()
+    def click_size_up(e):
+        if state["size"] < 1000: state["size"] += 50
+        update_screen()
 
-    def size_down(e):
-        if state["size"] > 50:
-            state["size"] -= 50
-            update_view()
+    def click_size_down(e):
+        if state["size"] > 50: state["size"] -= 50
+        update_screen()
 
-    def bright_up(e):
-        if state["bright"] < 100:
-            state["bright"] += 10
-            update_view()
+    def click_bright_up(e):
+        if state["bright"] < 100: state["bright"] += 10
+        update_screen()
 
-    def bright_down(e):
-        if state["bright"] > 10:
-            state["bright"] -= 10
-            update_view()
+    def click_bright_down(e):
+        if state["bright"] > 10: state["bright"] -= 10
+        update_screen()
 
     def toggle_flash(e):
-        state["mode_flash"] = not state["mode_flash"]
-        if state["mode_flash"]:
+        state["flash"] = not state["flash"]
+        if state["flash"]:
+            # 플래시 모드: 배경 흰색, 나머지 숨김
             page.bgcolor = "white"
-            controls.visible = False # 컨트롤 숨김
-            the_circle.visible = False # 원 숨김 (완전 흰색)
+            controls.visible = False
+            the_circle.visible = False
         else:
+            # 복구
             page.bgcolor = "black"
             controls.visible = True
             the_circle.visible = True
         page.update()
 
     # =================================================================
-    # 컨트롤 패널 (순수 텍스트 버튼 사용)
+    # 6. 레이아웃 조립 (안전한 Column 사용)
     # =================================================================
     
-    # [스타일] 잘 보이는 큰 버튼
-    def make_btn(text, func, color="blue"):
-        return ft.ElevatedButton(
-            text=text, 
-            on_click=func,
-            bgcolor=color,
-            color="white",
-            height=50,
-            width=80
-        )
-
-    # 컨트롤 영역
+    # 컨트롤 패널 조립
     controls = ft.Column(
         controls=[
-            ft.Divider(color="grey"),
-            txt_info,
-            ft.Divider(color="transparent", height=10),
+            ft.Container(height=20), # 여백
+            info_text,
+            ft.Container(height=20), # 여백
             
             ft.Text("크기 조절", color="grey"),
             ft.Row(
-                [make_btn("- 작게", size_down), make_btn("+ 크게", size_up)], 
+                [
+                    create_block_btn("- 작게", "orange", click_size_down),
+                    create_block_btn("+ 크게", "orange", click_size_up)
+                ],
                 alignment=ft.MainAxisAlignment.CENTER
             ),
             
-            ft.Divider(color="transparent", height=10),
+            ft.Container(height=20), # 여백
             
             ft.Text("밝기 조절", color="grey"),
             ft.Row(
-                [make_btn("- 어둡게", bright_down), make_btn("+ 밝게", bright_up)], 
+                [
+                    create_block_btn("- 어둡게", "cyan", click_bright_down),
+                    create_block_btn("+ 밝게", "cyan", click_bright_up)
+                ],
                 alignment=ft.MainAxisAlignment.CENTER
             ),
             
-            ft.Divider(color="transparent", height=20),
+            ft.Container(height=40), # 여백
             
-            # 플래시 버튼 (노란색)
-            ft.ElevatedButton(
-                text="플래시 모드 (흰색)", 
-                on_click=toggle_flash,
-                bgcolor="amber",
-                color="black",
-                height=60,
-                width=200
+            # 플래시 버튼 (가장 큼)
+            ft.Container(
+                content=ft.Text("플래시 모드 (흰 화면)", size=20, weight="bold"),
+                bgcolor="yellow",
+                width=250,
+                height=80,
+                alignment=ft.alignment.center,
+                border_radius=12,
+                on_click=toggle_flash
             )
         ],
         horizontal_alignment=ft.CrossAxisAlignment.CENTER
     )
 
-    # =================================================================
-    # 최종 레이아웃 (Column 사용 - 가장 안전함)
-    # =================================================================
+    # 메인 페이지 추가
     page.add(
         ft.Column(
             controls=[
-                # 상단 여백
-                ft.Container(height=20),
+                ft.Container(height=50), # 상단 여백
                 
-                # 원이 들어갈 공간 (높이 고정하여 UI 밀림 방지)
+                # 원 영역 (높이 고정해서 밀림 방지)
                 ft.Container(
                     content=the_circle,
                     alignment=ft.alignment.center,
-                    height=500, # 넉넉하게 공간 확보
+                    height=500, 
+                    bgcolor=ft.colors.with_opacity(0.1, "white") # 영역 확인용 살짝 표시
                 ),
                 
-                # 하단 컨트롤 패널
                 controls
             ],
-            scroll=ft.ScrollMode.AUTO, # 화면 넘치면 스크롤 가능
+            scroll=ft.ScrollMode.AUTO, # 화면 넘치면 스크롤
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
     )
